@@ -7,6 +7,15 @@ from PyQt5.QtGui import QIcon, QCursor, QFontDatabase, QFont
 class Example(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.font = None
+        self.pushButton5 = None
+        self.pushButton4 = None
+        self.pushButton3 = None
+        self.pushButton2 = None
+        self.label = None
+        self.pushButton6 = None
+        self.pushButton = None
+        self.pushButton1 = None
         self.initUI()
 
     def initUI(self):
