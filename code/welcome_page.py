@@ -4,7 +4,7 @@ from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QIcon, QCursor, QFontDatabase, QFont
 
 
-class Example(QMainWindow):
+class Welcome_page(QMainWindow):
     def __init__(self):
         super().__init__()
         self.font = None
@@ -97,6 +97,6 @@ class Example(QMainWindow):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    ex = Example()
+    ex = Welcome_page()
     ex.show()
     sys.exit(app.exec())
