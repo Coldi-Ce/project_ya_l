@@ -11,6 +11,8 @@ import sqlite3
 class Welcome_page(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.pushButton7 = None
+        self.result = None
         self.filename = None
         self.player = None
         self.font = None
@@ -31,6 +33,9 @@ class Welcome_page(QMainWindow):
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.setFixedWidth(800)
         self.setFixedHeight(800)
+        con = sqlite3.connect('../database/levels.db')
+        cur = con.cursor()
+        self.result = [i[0] for i in cur.execute('SELECT value FROM levels').fetchall()]
         self.pushButton = QPushButton('', self)
         self.pushButton.resize(80, 80)
         self.pushButton.move(20, 20)
@@ -67,16 +72,19 @@ class Welcome_page(QMainWindow):
         self.pushButton2.setFont(QFont(families[0], 30))
         self.pushButton2.setStyleSheet('border: 1px solid black; border-radius: 5px; text-align: center;')
         self.pushButton2.move(225, 400)
+        self.pushButton2.clicked.connect(self.level_1)
         self.pushButton3 = QPushButton('LEVEL II', self)
         self.pushButton3.resize(350, 60)
         self.pushButton3.setFont(QFont(families[0], 30))
-        self.pushButton3.setStyleSheet('border: 1px solid black; border-radius: 5px;')
         self.pushButton3.move(225, 470)
+        self.pushButton3.setStyleSheet('border: 1px solid black; border-radius: 5px; color: black;')
+        self.pushButton3.clicked.connect(self.level_2)
         self.pushButton4 = QPushButton('LEVEL III', self)
         self.pushButton4.resize(350, 60)
         self.pushButton4.setFont(QFont(families[0], 30))
-        self.pushButton4.setStyleSheet('border: 1px solid black; border-radius: 5px;')
         self.pushButton4.move(225, 540)
+        self.pushButton4.setStyleSheet('border: 1px solid black; border-radius: 5px; color: black;')
+        self.pushButton4.clicked.connect(self.level_3)
         self.font = self.pushButton2.font()
         self.font.setBold(True)
         self.pushButton2.setFont(self.font)
@@ -84,6 +92,26 @@ class Welcome_page(QMainWindow):
         self.pushButton4.setFont(self.font)
         self.pushButton2.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.pushButton5.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        if self.result[1] == 0:
+            self.pushButton3.setEnabled(False)
+        else:
+            self.pushButton3.setEnabled(True)
+            self.pushButton3.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        if self.result[2] == 0:
+            self.pushButton4.setEnabled(False)
+        else:
+            self.pushButton4.setEnabled(True)
+            self.pushButton4.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+
+    def level_1(self):
+        subprocess.Popen(['python', 'level_1.py'])
+        self.close()
+
+    def level_2(self):
+        pass
+
+    def level_3(self):
+        pass
 
     def musicPlayer(self):
         self.player = QMediaPlayer()
@@ -100,10 +128,7 @@ class Welcome_page(QMainWindow):
             self.pushButton.setIcon(QIcon('../data/звук_on.svg'))
 
     def level_check(self):
-        con = sqlite3.connect('../database/levels.db')
-        cur = con.cursor()
-        result = [i[0] for i in cur.execute('SELECT value FROM levels').fetchall()]
-        if result[0] == 0:
+        if self.result[0] == 0:
             self.pushButton6 = QPushButton('', self)
             self.pushButton6.setIcon(QIcon('../data/Замок.svg'))
             self.pushButton6.setIconSize(QSize(40, 40))
@@ -111,9 +136,8 @@ class Welcome_page(QMainWindow):
             self.pushButton6.adjustSize()
             self.pushButton6.move(170, 480)
         else:
-            self.pushButton3.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
             self.pushButton6 = None
-        if result[1] == 0:
+        if self.result[1] == 0:
             self.pushButton7 = QPushButton('', self)
             self.pushButton7.setIcon(QIcon('../data/Замок.svg'))
             self.pushButton7.setIconSize(QSize(40, 40))
@@ -121,10 +145,10 @@ class Welcome_page(QMainWindow):
             self.pushButton7.adjustSize()
             self.pushButton7.move(170, 550)
         else:
-            self.pushButton4.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
             self.pushButton7 = None
 
-    def settings(self):
+    @staticmethod
+    def settings():
         subprocess.Popen(['python', 'settings.py'])
 
     def termination(self):
@@ -135,7 +159,8 @@ class Welcome_page(QMainWindow):
             pass
         self.close()
 
-    def info(self):
+    @staticmethod
+    def info():
         subprocess.Popen(['python', 'information.py'])
 
 
