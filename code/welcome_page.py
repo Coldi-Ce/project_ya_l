@@ -1,14 +1,18 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel
-from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtCore import Qt, QSize, QUrl
 from PyQt5.QtGui import QIcon, QCursor, QFontDatabase, QFont
+from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 import subprocess
 import os
+import sqlite3
 
 
 class Welcome_page(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.filename = None
+        self.player = None
         self.font = None
         self.pushButton5 = None
         self.pushButton4 = None
@@ -18,7 +22,10 @@ class Welcome_page(QMainWindow):
         self.pushButton6 = None
         self.pushButton = None
         self.pushButton1 = None
+        self.flag = 0
         self.initUI()
+        self.level_check()
+        self.musicPlayer()
 
     def initUI(self):
         self.setWindowFlags(Qt.FramelessWindowHint)
@@ -27,10 +34,10 @@ class Welcome_page(QMainWindow):
         self.pushButton = QPushButton('', self)
         self.pushButton.resize(80, 80)
         self.pushButton.move(20, 20)
-        self.pushButton.setIcon(QIcon('../data/Шестеренка.svg'))
+        self.pushButton.setIcon(QIcon('../data/звук_on.svg'))
         self.pushButton.setIconSize(QSize(50, 50))
         self.pushButton.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        self.pushButton.clicked.connect(self.settings)
+        self.pushButton.clicked.connect(self.musicPlayer)
         self.pushButton.setStyleSheet('border: 0px;')
         self.pushButton1 = QPushButton('', self)
         self.pushButton1.resize(80, 80)
@@ -76,12 +83,49 @@ class Welcome_page(QMainWindow):
         self.pushButton3.setFont(self.font)
         self.pushButton4.setFont(self.font)
         self.pushButton2.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        self.pushButton3.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        self.pushButton4.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.pushButton5.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
 
+    def musicPlayer(self):
+        self.player = QMediaPlayer()
+        self.filename = QUrl.fromLocalFile('../data/music.wav')
+        self.player.setMedia(QMediaContent(self.filename))
+        self.player.play()
+        if self.flag == 1:
+            self.flag = 0
+            self.player.setVolume(0)
+            self.pushButton.setIcon(QIcon('../data/звук_off.svg'))
+        else:
+            self.flag = 1
+            self.player.setVolume(10)
+            self.pushButton.setIcon(QIcon('../data/звук_on.svg'))
+
+    def level_check(self):
+        con = sqlite3.connect('../database/levels.db')
+        cur = con.cursor()
+        result = [i[0] for i in cur.execute('SELECT value FROM levels').fetchall()]
+        if result[0] == 0:
+            self.pushButton6 = QPushButton('', self)
+            self.pushButton6.setIcon(QIcon('../data/Замок.svg'))
+            self.pushButton6.setIconSize(QSize(40, 40))
+            self.pushButton6.setStyleSheet('border: 0px;')
+            self.pushButton6.adjustSize()
+            self.pushButton6.move(170, 480)
+        else:
+            self.pushButton3.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+            self.pushButton6 = None
+        if result[1] == 0:
+            self.pushButton7 = QPushButton('', self)
+            self.pushButton7.setIcon(QIcon('../data/Замок.svg'))
+            self.pushButton7.setIconSize(QSize(40, 40))
+            self.pushButton7.setStyleSheet('border: 0px;')
+            self.pushButton7.adjustSize()
+            self.pushButton7.move(170, 550)
+        else:
+            self.pushButton4.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+            self.pushButton7 = None
+
     def settings(self):
-        pass
+        subprocess.Popen(['python', 'settings.py'])
 
     def termination(self):
         try:
