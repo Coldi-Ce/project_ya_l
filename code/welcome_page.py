@@ -6,6 +6,7 @@ from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 import subprocess
 import os
 import sqlite3
+import time
 
 
 class Welcome_page(QMainWindow):
@@ -104,7 +105,9 @@ class Welcome_page(QMainWindow):
             self.pushButton4.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
 
     def level_1(self):
-        os.system('python hearts_and_mobs.py')
+        self.player.setVolume(0)
+        subprocess.Popen(['python', 'hearts_and_mobs.py'])
+        time.sleep(1)
         self.close()
 
     def level_2(self):

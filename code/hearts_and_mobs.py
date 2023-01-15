@@ -1,5 +1,5 @@
 from random import randrange
-
+import sqlite3
 import pygame
 
 
@@ -82,7 +82,7 @@ if __name__ == '__main__':
             image.set_colorkey(color_key)
         else:
             image = image.convert_alpha()
-        image = pygame.transform.smoothscale(image, (33, 33))
+        image = pygame.transform.smoothscale(image, (30, 30))
         return image
 
 
@@ -138,12 +138,17 @@ if __name__ == '__main__':
 
 
     class Hero(pygame.sprite.Sprite):
+        heart = 2
         image1 = load_img(f"../data/cha{0}.png")
         image2 = load_img(f"../data/cha{1}.png")
         last_update = pygame.time.get_ticks()
+        last_death = pygame.time.get_ticks()
 
         def __init__(self, x, y):
             super().__init__()
+            self.con = sqlite3.connect('../database/Coins.db')
+            self.cur = self.con.cursor()
+            self.coins = 0
             self.start = [x, y]
             self.image = self.image1
             self.rect = self.image.get_rect()
@@ -160,12 +165,35 @@ if __name__ == '__main__':
             if move_right and self.rect.x <= 770:
                 self.rect.x += speed
             self.rotate()
-            if pygame.sprite.spritecollideany(self, vertical_blocks) \
-                    or pygame.sprite.spritecollideany(self, horizontal_blocks):
+            if pygame.sprite.spritecollideany(self, horizontal_blocks) \
+                    or pygame.sprite.spritecollideany(self, vertical_blocks):
                 self.rect.x = self.start[0]
                 self.rect.y = self.start[1]
             if pygame.sprite.spritecollideany(self, exit1):
+                global flag
                 flag = True
+            if pygame.sprite.spritecollide(self, all_spiders, False) \
+                    and pygame.time.get_ticks() - self.last_death > 2000:
+                self.last_death = pygame.time.get_ticks()
+                if self.heart == 2:
+                    heart2.remove(all_hearts)
+                    self.heart -= 1
+                else:
+                    all_hearts.add(heart2)
+                    self.coins = 0
+                    self.cur.execute('UPDATE coins SET Coins = ?', (self.coins,))
+                    self.con.commit()
+                    self.rect.x = self.start[0]
+                    self.rect.y = self.start[1]
+                    self.heart = 2
+                    for j in all_coins:
+                        j.kill()
+                    for j in range(7):
+                        all_coins.add(Coins())
+            if pygame.sprite.spritecollide(self, all_coins, True):
+                self.coins += 1
+                self.cur.execute('UPDATE coins SET Coins = ?', (self.coins,))
+                self.con.commit()
 
         def rotate(self):
             now = pygame.time.get_ticks()
@@ -178,13 +206,10 @@ if __name__ == '__main__':
 
 
     clock = pygame.time.Clock()
-
     all_sprites = pygame.sprite.Group()
-
-    all_sprites.add(Hero(40, 760))
-
+    hero = Hero(43, 763)
+    all_sprites.add(hero)
     exit1 = pygame.sprite.Group()
-
 
     class Exit1(pygame.sprite.Sprite):
         image1 = load_img("../data/door.png")
@@ -257,9 +282,31 @@ if __name__ == '__main__':
                 self.rect.y = randrange(5, 800, 40)
                 self.rect.x = randrange(10, 800, 40)
 
-
     trader = pygame.sprite.Group()
     trader.add(Trader())
+
+
+    class Coins(pygame.sprite.Sprite):
+        image1 = load_img("../data/coin.png")
+        last_update = pygame.time.get_ticks()
+
+        def __init__(self):
+            super().__init__()
+            self.image = self.image1
+            self.rect = self.image.get_rect()
+            self.rect.x = 20
+            self.rect.y = 20
+            while pygame.sprite.spritecollideany(self, horizontal_blocks) \
+                    or pygame.sprite.spritecollideany(self, vertical_blocks) \
+                    or pygame.sprite.spritecollideany(self, all_sprites) \
+                    or pygame.sprite.spritecollideany(self, all_spiders):
+                self.rect.y = randrange(5, 800, 40)
+                self.rect.x = randrange(5, 800, 40)
+
+
+    all_coins = pygame.sprite.Group()
+    for i in range(7):
+        all_coins.add(Coins())
 
     board = Board(20, 20)
     running = True
@@ -301,7 +348,7 @@ if __name__ == '__main__':
         all_spiders.draw(screen)
         all_hearts.draw(screen)
         trader.draw(screen)
-
+        all_coins.draw(screen)
         clock.tick(FPS)
         pygame.display.flip()
 
