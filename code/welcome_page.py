@@ -106,7 +106,7 @@ class Welcome_page(QMainWindow):
 
     def level_1(self):
         self.player.setVolume(0)
-        subprocess.Popen(['python', 'hearts_and_mobs.py'])
+        subprocess.Popen(['python', 'level_1.py'])
         time.sleep(1)
         self.close()
 
