@@ -82,7 +82,7 @@ if __name__ == '__main__':
             image.set_colorkey(color_key)
         else:
             image = image.convert_alpha()
-        image = pygame.transform.smoothscale(image, (30, 30))
+        image = pygame.transform.smoothscale(image, (20, 20))
         return image
 
 
@@ -126,16 +126,19 @@ if __name__ == '__main__':
             self.rect.y = y
 
 
-    horizontal_blocks = pygame.sprite.Group()
-    vertical_blocks = pygame.sprite.Group()
-    for i in range(20):
-        vertical_blocks.add(Block(0, i * 40))
-        horizontal_blocks.add(Block(i * 40, 0))
-    for i in range(2, 20):
-        vertical_blocks.add(Block(760, i * 40))
-    for i in range(2, 20):
-        horizontal_blocks.add(Block(i * 40, 760))
+    all_blocks = pygame.sprite.Group()
 
+
+    def make_a_lyb():
+        with open('level_1.txt', 'r') as f:
+            lvl = f.read()
+            lvl = lvl.split('\n')
+            for i, j in enumerate(lvl):
+                for x, y in enumerate(j):
+                    if y == '#':
+                        all_blocks.add(Block(i * 40, x * 40))
+
+    make_a_lyb()
 
     class Hero(pygame.sprite.Sprite):
         heart = 2
@@ -165,8 +168,7 @@ if __name__ == '__main__':
             if move_right and self.rect.x <= 770:
                 self.rect.x += speed
             self.rotate()
-            if pygame.sprite.spritecollideany(self, horizontal_blocks) \
-                    or pygame.sprite.spritecollideany(self, vertical_blocks):
+            if pygame.sprite.spritecollideany(self, all_blocks):
                 self.rect.x = self.start[0]
                 self.rect.y = self.start[1]
             if pygame.sprite.spritecollideany(self, exit1):
@@ -207,7 +209,7 @@ if __name__ == '__main__':
 
     clock = pygame.time.Clock()
     all_sprites = pygame.sprite.Group()
-    hero = Hero(43, 763)
+    hero = Hero(50, 770)
     all_sprites.add(hero)
     exit1 = pygame.sprite.Group()
 
@@ -253,9 +255,7 @@ if __name__ == '__main__':
             self.rect = self.image.get_rect()
             self.rect.y = randrange(5, 800, 40)
             self.rect.x = randrange(5, 800, 40)
-            while pygame.sprite.spritecollideany(self, horizontal_blocks) \
-                    or pygame.sprite.spritecollideany(self, vertical_blocks) \
-                    or pygame.sprite.spritecollideany(self, all_sprites):
+            while pygame.sprite.spritecollideany(self, all_blocks) or pygame.sprite.spritecollideany(self, all_sprites):
                 self.rect.y = randrange(5, 800, 40)
                 self.rect.x = randrange(5, 800, 40)
 
@@ -275,8 +275,7 @@ if __name__ == '__main__':
             self.rect = self.image.get_rect()
             self.rect.x = randrange(10, 800, 40)
             self.rect.y = randrange(5, 800, 40)
-            while pygame.sprite.spritecollideany(self, horizontal_blocks) \
-                    or pygame.sprite.spritecollideany(self, vertical_blocks) \
+            while pygame.sprite.spritecollideany(self, all_blocks) \
                     or pygame.sprite.spritecollideany(self, all_sprites) \
                     or pygame.sprite.spritecollideany(self, all_spiders):
                 self.rect.y = randrange(5, 800, 40)
@@ -296,12 +295,13 @@ if __name__ == '__main__':
             self.rect = self.image.get_rect()
             self.rect.x = 20
             self.rect.y = 20
-            while pygame.sprite.spritecollideany(self, horizontal_blocks) \
-                    or pygame.sprite.spritecollideany(self, vertical_blocks) \
+            while pygame.sprite.spritecollideany(self, all_blocks) \
                     or pygame.sprite.spritecollideany(self, all_sprites) \
-                    or pygame.sprite.spritecollideany(self, all_spiders):
-                self.rect.y = randrange(5, 800, 40)
-                self.rect.x = randrange(5, 800, 40)
+                    or pygame.sprite.spritecollideany(self, all_spiders) \
+                    or pygame.sprite.spritecollideany(self, trader) \
+                    or pygame.sprite.spritecollideany(self, exit1):
+                self.rect.y = randrange(10, 800, 40)
+                self.rect.x = randrange(10, 800, 40)
 
 
     all_coins = pygame.sprite.Group()
@@ -339,8 +339,7 @@ if __name__ == '__main__':
 
         screen.fill(pygame.Color('black'))
         board.render(screen)
-        horizontal_blocks.draw(screen)
-        vertical_blocks.draw(screen)
+        all_blocks.draw(screen)
         all_sprites.draw(screen)
         exit1.draw(screen)
         all_sprites.update()
