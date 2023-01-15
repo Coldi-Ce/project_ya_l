@@ -1,8 +1,9 @@
 import os
-from random import randint
+from random import randint, randrange
 
 import pygame
 from config import *
+
 if __name__ == '__main__':
     pygame.init()
     time = 0
@@ -18,6 +19,8 @@ if __name__ == '__main__':
     pygame.mixer.music.play(loops=-1)
     move_right = move_left = move_up = move_down = False
     flag = False
+
+
 
 
     def load_block(name, color_key=None):
@@ -135,9 +138,11 @@ if __name__ == '__main__':
 
 
     class Hero(pygame.sprite.Sprite):
+        heart = 2
         image1 = load_img(f"cha{0}.png")
         image2 = load_img(f"cha{1}.png")
         last_update = pygame.time.get_ticks()
+        last_death = pygame.time.get_ticks()
 
         def __init__(self, x, y):
             super().__init__()
@@ -148,6 +153,7 @@ if __name__ == '__main__':
             self.rect.y = y
 
         def update(self):
+
             if move_up and self.rect.y >= 4:
                 self.rect.y -= speed
             if move_down and self.rect.y <= 760:
@@ -162,6 +168,16 @@ if __name__ == '__main__':
                 self.rect.y = self.start[1]
             if pygame.sprite.spritecollideany(self, exit1):
                 flag = True
+            if pygame.sprite.spritecollide(self, all_spiders, False) and pygame.time.get_ticks() - self.last_death > 2000:
+                self.last_death = pygame.time.get_ticks()
+                if self.heart == 2:
+                    heart2.remove(all_hearts)
+                    self.heart -= 1
+                else:
+                    all_hearts.add(heart2)
+                    self.rect.x = self.start[0]
+                    self.rect.y = self.start[1]
+                    self.heart = 2
 
         def rotate(self):
             now = pygame.time.get_ticks()
@@ -217,6 +233,7 @@ if __name__ == '__main__':
 
     class Spiders(pygame.sprite.Sprite):
         image1 = load_spider("spide.png")
+        last_update = pygame.time.get_ticks()
 
         def __init__(self):
             super().__init__()
@@ -225,12 +242,18 @@ if __name__ == '__main__':
             self.rect.x = 20
             self.rect.y = 20
             while pygame.sprite.spritecollideany(self, all_blocks) or pygame.sprite.spritecollideany(self, all_sprites):
-                self.rect.y = randint(100, 700)
-                self.rect.x = randint(400, 700)
+                self.rect.y = randrange(5, 800, 40)
+                self.rect.x = randrange(5, 800, 40)
+
+        def update(self):
+            now = pygame.time.get_ticks()
+            if now - self.last_update > 40:
+                self.last_update = now
+                self.rect.x += randint(0, 4) - 2
+                self.rect.y += randint(0, 4) - 2
 
 
     all_spiders = pygame.sprite.Group()
-
 
     for i in range(5):
         all_spiders.add(Spiders())
@@ -272,6 +295,7 @@ if __name__ == '__main__':
         all_sprites.update()
         pygame.draw.rect(screen, [150, 75, 50], [0, 801, 800, 900])
         all_spiders.draw(screen)
+        all_spiders.update()
         all_hearts.draw(screen)
 
         clock.tick(FPS)
