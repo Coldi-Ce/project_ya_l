@@ -104,7 +104,7 @@ class Welcome_page(QMainWindow):
             self.pushButton4.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
 
     def level_1(self):
-        subprocess.Popen(['python', 'level_1.py'])
+        os.system('python hearts_and_mobs.py')
         self.close()
 
     def level_2(self):
