@@ -161,7 +161,6 @@ class Welcome_page(QMainWindow):
             self.label1.move(218, 700)
             self.label1.setFont(QFont('Arial', 35))
             self.label1.adjustSize()
-            print(self.label1.width())
 
     @staticmethod
     def settings():
@@ -178,7 +177,6 @@ class Welcome_page(QMainWindow):
     @staticmethod
     def info():
         subprocess.Popen(['python', 'information.py'])
-
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

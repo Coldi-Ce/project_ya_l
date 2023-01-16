@@ -199,7 +199,10 @@ if __name__ == '__main__':
             else:
                 self.image = load_img('../data/cha1.png')
             if self.cur.execute('SELECT Weapon FROM coins').fetchone()[0] == 1:
-                pygame.sprite.spritecollide(self, all_spiders, True)
+                if pygame.sprite.spritecollideany(self, all_spiders) is not None:
+                    sprt = pygame.sprite.spritecollideany(self, all_spiders)
+                    img = load_spider('../data/Кровь.png')
+                    sprt.image = img
             else:
                 if pygame.sprite.spritecollide(self, all_spiders, False) \
                         and pygame.time.get_ticks() - self.last_death > 2000:
