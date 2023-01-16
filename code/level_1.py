@@ -1,3 +1,4 @@
+import sys
 from random import randrange
 import sqlite3
 import pygame
@@ -177,8 +178,14 @@ if __name__ == '__main__':
             if move_right and self.rect.x <= 770:
                 self.rect.x += self.speed
             self.rotate()
+            if pygame.sprite.spritecollide(self, exit1, False):
+                self.speed = 0
+                self.cur.execute('UPDATE levels SET value = 1 WHERE id = 1')
+                self.con.commit()
+                subprocess.Popen(['python', 'welcome_page.py'])
+                sys.exit()
             if len(all_hearts) == 1:
-                if cur.execute('SELECT Hearts FROM coins').fetchone()[0] == 2:
+                if self.cur.execute('SELECT Hearts FROM coins').fetchone()[0] == 2:
                     all_hearts.add(heart2)
                     self.heart = 2
             if pygame.sprite.spritecollideany(self, all_blocks):

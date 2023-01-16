@@ -1,6 +1,9 @@
+import sys
 from random import randrange
 import sqlite3
 import pygame
+import subprocess
+import time as t
 
 
 if __name__ == '__main__':
@@ -18,6 +21,10 @@ if __name__ == '__main__':
     pygame.mixer.music.play(loops=-1)
     move_right = move_left = move_up = move_down = False
     flag = False
+    con = sqlite3.connect('../database/Coins.db')
+    cur = con.cursor()
+    cur.execute('UPDATE coins SET Coins = 0, Weapon = 0, Skin = 0, Hearts = 2')
+    con.commit()
 
 
     def load_block(name, color_key=None):
@@ -139,6 +146,7 @@ if __name__ == '__main__':
                         all_blocks.add(Block(i * 40, x * 40))
 
     make_a_lyb()
+    coords = [(i.rect.x, i.rect.y) for i in all_blocks]
 
     class Hero(pygame.sprite.Sprite):
         heart = 2
@@ -157,45 +165,69 @@ if __name__ == '__main__':
             self.rect = self.image.get_rect()
             self.rect.x = x
             self.rect.y = y
+            self.speed = speed
+            self.coords = coords
 
         def update(self):
             if move_up and self.rect.y >= 4:
-                self.rect.y -= speed
+                self.rect.y -= self.speed
             if move_down and self.rect.y <= 760:
-                self.rect.y += speed
+                self.rect.y += self.speed
             if move_left and self.rect.x >= -3:
-                self.rect.x -= speed
+                self.rect.x -= self.speed
             if move_right and self.rect.x <= 770:
-                self.rect.x += speed
+                self.rect.x += self.speed
             self.rotate()
+            if pygame.sprite.spritecollide(self, exit1, False):
+                self.speed = 0
+                self.cur.execute('UPDATE levels SET value = 1 WHERE id = 3')
+                self.con.commit()
+                subprocess.Popen(['python', 'welcome_page.py'])
+                sys.exit()
+            if len(all_hearts) == 1:
+                if self.cur.execute('SELECT Hearts FROM coins').fetchone()[0] == 2:
+                    all_hearts.add(heart2)
+                    self.heart = 2
             if pygame.sprite.spritecollideany(self, all_blocks):
                 self.rect.x = self.start[0]
                 self.rect.y = self.start[1]
             if pygame.sprite.spritecollideany(self, exit1):
                 global flag
                 flag = True
-            if pygame.sprite.spritecollide(self, all_spiders, False) \
-                    and pygame.time.get_ticks() - self.last_death > 2000:
-                self.last_death = pygame.time.get_ticks()
-                if self.heart == 2:
-                    heart2.remove(all_hearts)
-                    self.heart -= 1
-                else:
-                    all_hearts.add(heart2)
-                    self.coins = 0
-                    self.cur.execute('UPDATE coins SET Coins = ?', (self.coins,))
-                    self.con.commit()
-                    self.rect.x = self.start[0]
-                    self.rect.y = self.start[1]
-                    self.heart = 2
-                    for j in all_coins:
-                        j.kill()
-                    for j in range(7):
-                        all_coins.add(Coins())
+            if self.cur.execute('SELECT Skin FROM coins').fetchone()[0] == 1:
+                self.image = load_img('../data/new_skin.png')
+            else:
+                self.image = load_img('../data/cha1.png')
+            if self.cur.execute('SELECT Weapon FROM coins').fetchone()[0] == 1:
+                pygame.sprite.spritecollide(self, all_spiders, True)
+            else:
+                if pygame.sprite.spritecollide(self, all_spiders, False) \
+                        and pygame.time.get_ticks() - self.last_death > 2000:
+                    self.last_death = pygame.time.get_ticks()
+                    if self.heart == 2:
+                        heart2.remove(all_hearts)
+                        self.heart -= 1
+                        self.cur.execute('UPDATE coins SET Hearts = 1')
+                        self.con.commit()
+                    else:
+                        all_hearts.add(heart2)
+                        self.cur.execute('UPDATE coins SET Coins = 0, Weapon = 0, Skin = 0, Hearts = 2')
+                        self.con.commit()
+                        self.rect.x = self.start[0]
+                        self.rect.y = self.start[1]
+                        self.heart = 2
+                        for j in all_coins:
+                            j.kill()
+                        for j in range(7):
+                            all_coins.add(Coins())
             if pygame.sprite.spritecollide(self, all_coins, True):
                 self.coins += 1
                 self.cur.execute('UPDATE coins SET Coins = ?', (self.coins,))
                 self.con.commit()
+            if pygame.sprite.spritecollide(self, trader, False):
+                self.rect.y += 40
+                t.sleep(0.5)
+                subprocess.Popen(['python', 'trader.py'])
 
         def rotate(self):
             now = pygame.time.get_ticks()
@@ -246,6 +278,20 @@ if __name__ == '__main__':
     all_hearts.add(heart2)
 
 
+    class Trader(pygame.sprite.Sprite):
+        image1 = pygame.image.load('../data/trader.png')
+
+        def __init__(self):
+            super().__init__()
+            self.image = self.image1
+            self.rect = self.image.get_rect()
+            self.rect.x = 130
+            self.rect.y = 565
+
+    trader = pygame.sprite.Group()
+    trader.add(Trader())
+
+
     class Spiders(pygame.sprite.Sprite):
         image1 = load_spider("../data/spide.png")
 
@@ -255,7 +301,9 @@ if __name__ == '__main__':
             self.rect = self.image.get_rect()
             self.rect.y = randrange(5, 800, 40)
             self.rect.x = randrange(5, 800, 40)
-            while pygame.sprite.spritecollideany(self, all_blocks) or pygame.sprite.spritecollideany(self, all_sprites):
+            while pygame.sprite.spritecollideany(self, all_blocks) \
+                    or pygame.sprite.spritecollideany(self, all_sprites) \
+                    or pygame.sprite.spritecollideany(self, trader):
                 self.rect.y = randrange(5, 800, 40)
                 self.rect.x = randrange(5, 800, 40)
 
@@ -264,25 +312,6 @@ if __name__ == '__main__':
 
     for i in range(5):
         all_spiders.add(Spiders())
-
-
-    class Trader(pygame.sprite.Sprite):
-        image1 = pygame.image.load('../data/trader.png')
-
-        def __init__(self):
-            super().__init__()
-            self.image = self.image1
-            self.rect = self.image.get_rect()
-            self.rect.x = randrange(10, 800, 40)
-            self.rect.y = randrange(5, 800, 40)
-            while pygame.sprite.spritecollideany(self, all_blocks) \
-                    or pygame.sprite.spritecollideany(self, all_sprites) \
-                    or pygame.sprite.spritecollideany(self, all_spiders):
-                self.rect.y = randrange(5, 800, 40)
-                self.rect.x = randrange(10, 800, 40)
-
-    trader = pygame.sprite.Group()
-    trader.add(Trader())
 
 
     class Coins(pygame.sprite.Sprite):
@@ -333,10 +362,6 @@ if __name__ == '__main__':
                     move_down = False
                 if event.key == pygame.K_a:
                     move_left = False
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:
-                    pass
-
         screen.fill(pygame.Color('black'))
         board.render(screen)
         all_blocks.draw(screen)

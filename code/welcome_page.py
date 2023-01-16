@@ -25,6 +25,7 @@ class Welcome_page(QMainWindow):
         self.pushButton6 = None
         self.pushButton = None
         self.pushButton1 = None
+        self.label1 = QLabel('', self)
         self.flag = 0
         self.initUI()
         self.level_check()
@@ -34,7 +35,7 @@ class Welcome_page(QMainWindow):
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.setFixedWidth(800)
         self.setFixedHeight(800)
-        con = sqlite3.connect('../database/levels.db')
+        con = sqlite3.connect('../database/Coins.db')
         cur = con.cursor()
         self.result = [i[0] for i in cur.execute('SELECT value FROM levels').fetchall()]
         self.pushButton = QPushButton('', self)
@@ -67,22 +68,22 @@ class Welcome_page(QMainWindow):
         self.label.move(205, 100)
         self.label.adjustSize()
         id2 = QFontDatabase.addApplicationFont('../data/Шрифт2.ttf')
-        families = QFontDatabase.applicationFontFamilies(id2)
+        self.families = QFontDatabase.applicationFontFamilies(id2)
         self.pushButton2 = QPushButton('LEVEL I', self)
         self.pushButton2.resize(350, 60)
-        self.pushButton2.setFont(QFont(families[0], 30))
+        self.pushButton2.setFont(QFont(self.families[0], 30))
         self.pushButton2.setStyleSheet('border: 1px solid black; border-radius: 5px; text-align: center;')
         self.pushButton2.move(225, 400)
         self.pushButton2.clicked.connect(self.level_1)
         self.pushButton3 = QPushButton('LEVEL II', self)
         self.pushButton3.resize(350, 60)
-        self.pushButton3.setFont(QFont(families[0], 30))
+        self.pushButton3.setFont(QFont(self.families[0], 30))
         self.pushButton3.move(225, 470)
         self.pushButton3.setStyleSheet('border: 1px solid black; border-radius: 5px; color: black;')
         self.pushButton3.clicked.connect(self.level_2)
         self.pushButton4 = QPushButton('LEVEL III', self)
         self.pushButton4.resize(350, 60)
-        self.pushButton4.setFont(QFont(families[0], 30))
+        self.pushButton4.setFont(QFont(self.families[0], 30))
         self.pushButton4.move(225, 540)
         self.pushButton4.setStyleSheet('border: 1px solid black; border-radius: 5px; color: black;')
         self.pushButton4.clicked.connect(self.level_3)
@@ -93,12 +94,12 @@ class Welcome_page(QMainWindow):
         self.pushButton4.setFont(self.font)
         self.pushButton2.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.pushButton5.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        if self.result[1] == 0:
+        if self.result[0] == 0:
             self.pushButton3.setEnabled(False)
         else:
             self.pushButton3.setEnabled(True)
             self.pushButton3.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        if self.result[2] == 0:
+        if self.result[1] == 0:
             self.pushButton4.setEnabled(False)
         else:
             self.pushButton4.setEnabled(True)
@@ -108,13 +109,19 @@ class Welcome_page(QMainWindow):
         self.player.setVolume(0)
         subprocess.Popen(['python', 'level_1.py'])
         time.sleep(1)
-        self.close()
+        sys.exit()
 
     def level_2(self):
-        pass
+        self.player.setVolume(0)
+        subprocess.Popen(['python', 'level_2.py'])
+        time.sleep(1)
+        sys.exit()
 
     def level_3(self):
-        pass
+        self.player.setVolume(0)
+        subprocess.Popen(['python', 'level_3.py'])
+        time.sleep(1)
+        sys.exit()
 
     def musicPlayer(self):
         self.player = QMediaPlayer()
@@ -149,6 +156,12 @@ class Welcome_page(QMainWindow):
             self.pushButton7.move(170, 550)
         else:
             self.pushButton7 = None
+        if self.result[2] == 1:
+            self.label1.setText('Вы прошли игру!')
+            self.label1.move(218, 700)
+            self.label1.setFont(QFont('Arial', 35))
+            self.label1.adjustSize()
+            print(self.label1.width())
 
     @staticmethod
     def settings():
