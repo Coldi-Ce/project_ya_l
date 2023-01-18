@@ -1,4 +1,4 @@
-
+import sys
 from random import randrange
 import sqlite3
 import pygame
@@ -148,6 +148,7 @@ if __name__ == '__main__':
 
     make_a_lyb()
     coords = [(i.rect.x, i.rect.y) for i in all_blocks]
+
 
     class Hero(pygame.sprite.Sprite):
         heart = 2
@@ -343,6 +344,9 @@ if __name__ == '__main__':
     for i in range(7):
         all_coins.add(Coins())
 
+    def except_hook(cls, exception, traceback):
+        sys.__excepthook__(cls, exception, traceback)
+
     board = Board(20, 20)
     while running:
         time = 0
@@ -380,5 +384,5 @@ if __name__ == '__main__':
         all_coins.draw(screen)
         clock.tick(FPS)
         pygame.display.flip()
-
+    sys.excepthook = except_hook
     pygame.quit()

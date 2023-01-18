@@ -3,6 +3,7 @@ import sqlite3
 import pygame
 import subprocess
 import time as t
+import sys
 
 
 if __name__ == '__main__':
@@ -347,6 +348,9 @@ if __name__ == '__main__':
         global running
         running = False
 
+    def except_hook(cls, exception, traceback):
+        sys.__excepthook__(cls, exception, traceback)
+
     board = Board(20, 20)
     while running:
         time = 0
@@ -384,5 +388,5 @@ if __name__ == '__main__':
         all_coins.draw(screen)
         clock.tick(FPS)
         pygame.display.flip()
-
+        sys.excepthook = except_hook
     pygame.quit()
