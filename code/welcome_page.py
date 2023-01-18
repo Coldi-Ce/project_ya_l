@@ -101,6 +101,9 @@ class Welcome_page(QMainWindow):
         self.pushButton4.setFont(self.font)
         self.pushButton2.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.pushButton5.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.label1 = QLabel('', self)
+        self.label1.setFont(QFont('Arial', 30))
+        self.label1.move(250, 650)
 
     def level_1(self):
         self.flag = 1
@@ -141,6 +144,9 @@ class Welcome_page(QMainWindow):
         else:
             self.pushButton4.setEnabled(True)
             self.pushButton4.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        if self.result[2] == 1:
+            self.label1.setText('Вы прошли игру!')
+            self.label1.adjustSize()
 
     @staticmethod
     def settings():
