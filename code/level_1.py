@@ -197,7 +197,7 @@ if __name__ == '__main__':
             if self.cur.execute('SELECT Skin FROM coins').fetchone()[0] == 1:
                 self.image = load_img('../data/new_skin.png')
             else:
-                self.image = load_img('../data/cha1.png')
+                self.rotate()
             if self.cur.execute('SELECT Weapon FROM coins').fetchone()[0] == 1:
                 if pygame.sprite.spritecollideany(self, all_spiders) is not None:
                     sprt = pygame.sprite.spritecollideany(self, all_spiders)
