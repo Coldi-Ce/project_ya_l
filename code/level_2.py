@@ -1,4 +1,4 @@
-import sys
+
 from random import randrange
 import sqlite3
 import pygame
@@ -8,13 +8,14 @@ import time as t
 
 if __name__ == '__main__':
     pygame.init()
+    running = True
     time = 0
     pygame.display.set_caption("aaa-a-lab")
     pygame.init()
     size = width, height = 800, 900
     screen = pygame.display.set_mode(size)
     FPS = 60
-    speed = 2
+    speed = 2.5
     pygame.mixer.init()
     pygame.mixer.music.load('../data/The_past.mp3')
     pygame.mixer.music.set_volume(0.02)
@@ -182,8 +183,7 @@ if __name__ == '__main__':
                 self.speed = 0
                 self.cur.execute('UPDATE levels SET value = 1 WHERE id = 2')
                 self.con.commit()
-                subprocess.Popen(['python', 'welcome_page.py'])
-                sys.exit()
+                termination()
             if len(all_hearts) == 1:
                 if self.cur.execute('SELECT Hearts FROM coins').fetchone()[0] == 2:
                     all_hearts.add(heart2)
@@ -197,7 +197,7 @@ if __name__ == '__main__':
             if self.cur.execute('SELECT Skin FROM coins').fetchone()[0] == 1:
                 self.image = load_img('../data/new_skin.png')
             else:
-                self.image = load_img('../data/cha1.png')
+                self.rotate()
             if self.cur.execute('SELECT Weapon FROM coins').fetchone()[0] == 1:
                 if pygame.sprite.spritecollideany(self, all_spiders) is not None:
                     sprt = pygame.sprite.spritecollideany(self, all_spiders)
@@ -228,7 +228,7 @@ if __name__ == '__main__':
                 self.cur.execute('UPDATE coins SET Coins = ?', (self.coins,))
                 self.con.commit()
             if pygame.sprite.spritecollide(self, trader, False):
-                self.rect.y += 40
+                self.rect.x -= 40
                 t.sleep(0.5)
                 subprocess.Popen(['python', 'trader.py'])
 
@@ -241,6 +241,9 @@ if __name__ == '__main__':
                 elif self.image == self.image2:
                     self.image = self.image1
 
+    def termination():
+        global running
+        running = False
 
     clock = pygame.time.Clock()
     all_sprites = pygame.sprite.Group()
@@ -341,7 +344,6 @@ if __name__ == '__main__':
         all_coins.add(Coins())
 
     board = Board(20, 20)
-    running = True
     while running:
         time = 0
         for event in pygame.event.get():

@@ -59,10 +59,7 @@ class Information(QMainWindow):
             '- 3 уровня сложности\n'
             '- Разнообразные скины\n'
             '- Динамичная музыка\n'
-            '- Телепорты\n'
-            '- \n'
-            '- \n'
-            '- \n'
+            '- Враги-пауки'
         )
         self.label4.setStyleSheet('border: 0px;')
         self.label4.setFont(QFont(families[0], 9))

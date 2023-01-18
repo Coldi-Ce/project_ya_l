@@ -2,17 +2,17 @@ import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel
 from PyQt5.QtCore import Qt, QSize, QUrl
 from PyQt5.QtGui import QIcon, QCursor, QFontDatabase, QFont
-from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
+import pygame
 import subprocess
 import os
 import sqlite3
-import time
 
 
 class Welcome_page(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.pushButton7 = None
+        self.pushButton8 = None
+        self.families = None
         self.result = None
         self.filename = None
         self.player = None
@@ -22,22 +22,21 @@ class Welcome_page(QMainWindow):
         self.pushButton3 = None
         self.pushButton2 = None
         self.label = None
-        self.pushButton6 = None
         self.pushButton = None
         self.pushButton1 = None
         self.label1 = QLabel('', self)
         self.flag = 0
         self.initUI()
         self.level_check()
-        self.musicPlayer()
+        pygame.init()
+        self.player = pygame.mixer.Sound('../data/music.wav')
+        self.player.play()
+        self.level_check()
 
     def initUI(self):
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.setFixedWidth(800)
         self.setFixedHeight(800)
-        con = sqlite3.connect('../database/Coins.db')
-        cur = con.cursor()
-        self.result = [i[0] for i in cur.execute('SELECT value FROM levels').fetchall()]
         self.pushButton = QPushButton('', self)
         self.pushButton.resize(80, 80)
         self.pushButton.move(20, 20)
@@ -87,6 +86,14 @@ class Welcome_page(QMainWindow):
         self.pushButton4.move(225, 540)
         self.pushButton4.setStyleSheet('border: 1px solid black; border-radius: 5px; color: black;')
         self.pushButton4.clicked.connect(self.level_3)
+        self.pushButton8 = QPushButton('', self)
+        self.pushButton8.resize(80, 80)
+        self.pushButton8.move(700, 700)
+        self.pushButton8.setIcon(QIcon('../data/reload.svg'))
+        self.pushButton8.setIconSize(QSize(50, 50))
+        self.pushButton8.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.pushButton8.setStyleSheet('border: 0px;')
+        self.pushButton8.clicked.connect(self.level_check)
         self.font = self.pushButton2.font()
         self.font.setBold(True)
         self.pushButton2.setFont(self.font)
@@ -94,6 +101,36 @@ class Welcome_page(QMainWindow):
         self.pushButton4.setFont(self.font)
         self.pushButton2.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.pushButton5.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+
+    def level_1(self):
+        self.flag = 1
+        self.musicPlayer()
+        subprocess.Popen(['python', 'level_1.py'])
+
+    def level_2(self):
+        self.flag = 1
+        self.musicPlayer()
+        subprocess.Popen(['python', 'level_2.py'])
+
+    def level_3(self):
+        self.flag = 1
+        self.musicPlayer()
+        subprocess.Popen(['python', 'level_3.py'])
+
+    def musicPlayer(self):
+        if self.flag == 1:
+            self.flag = 0
+            self.player.set_volume(0)
+            self.pushButton.setIcon(QIcon('../data/звук_off.svg'))
+        else:
+            self.flag = 1
+            self.player.set_volume(0.1)
+            self.pushButton.setIcon(QIcon('../data/звук_on.svg'))
+
+    def level_check(self):
+        con = sqlite3.connect('../database/Coins.db')
+        cur = con.cursor()
+        self.result = [i[0] for i in cur.execute('SELECT value FROM levels').fetchall()]
         if self.result[0] == 0:
             self.pushButton3.setEnabled(False)
         else:
@@ -104,63 +141,6 @@ class Welcome_page(QMainWindow):
         else:
             self.pushButton4.setEnabled(True)
             self.pushButton4.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-
-    def level_1(self):
-        self.player.setVolume(0)
-        subprocess.Popen(['python', 'level_1.py'])
-        time.sleep(1)
-        sys.exit()
-
-    def level_2(self):
-        self.player.setVolume(0)
-        subprocess.Popen(['python', 'level_2.py'])
-        time.sleep(1)
-        sys.exit()
-
-    def level_3(self):
-        self.player.setVolume(0)
-        subprocess.Popen(['python', 'level_3.py'])
-        time.sleep(1)
-        sys.exit()
-
-    def musicPlayer(self):
-        self.player = QMediaPlayer()
-        self.filename = QUrl.fromLocalFile('../data/music.wav')
-        self.player.setMedia(QMediaContent(self.filename))
-        self.player.play()
-        if self.flag == 1:
-            self.flag = 0
-            self.player.setVolume(0)
-            self.pushButton.setIcon(QIcon('../data/звук_off.svg'))
-        else:
-            self.flag = 1
-            self.player.setVolume(10)
-            self.pushButton.setIcon(QIcon('../data/звук_on.svg'))
-
-    def level_check(self):
-        if self.result[0] == 0:
-            self.pushButton6 = QPushButton('', self)
-            self.pushButton6.setIcon(QIcon('../data/Замок.svg'))
-            self.pushButton6.setIconSize(QSize(40, 40))
-            self.pushButton6.setStyleSheet('border: 0px;')
-            self.pushButton6.adjustSize()
-            self.pushButton6.move(170, 480)
-        else:
-            self.pushButton6 = None
-        if self.result[1] == 0:
-            self.pushButton7 = QPushButton('', self)
-            self.pushButton7.setIcon(QIcon('../data/Замок.svg'))
-            self.pushButton7.setIconSize(QSize(40, 40))
-            self.pushButton7.setStyleSheet('border: 0px;')
-            self.pushButton7.adjustSize()
-            self.pushButton7.move(170, 550)
-        else:
-            self.pushButton7 = None
-        if self.result[2] == 1:
-            self.label1.setText('Вы прошли игру!')
-            self.label1.move(218, 700)
-            self.label1.setFont(QFont('Arial', 35))
-            self.label1.adjustSize()
 
     @staticmethod
     def settings():
@@ -178,8 +158,14 @@ class Welcome_page(QMainWindow):
     def info():
         subprocess.Popen(['python', 'information.py'])
 
+
+def except_hook(cls, exception, traceback):
+    sys.__excepthook__(cls, exception, traceback)
+
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = Welcome_page()
     ex.show()
+    sys.excepthook = except_hook
     sys.exit(app.exec())

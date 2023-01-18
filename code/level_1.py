@@ -5,9 +5,9 @@ import pygame
 import subprocess
 import time as t
 
-
 if __name__ == '__main__':
     pygame.init()
+    running = True
     time = 0
     pygame.display.set_caption("aaa-a-lab")
     pygame.init()
@@ -145,8 +145,10 @@ if __name__ == '__main__':
                     if y == '#':
                         all_blocks.add(Block(i * 40, x * 40))
 
+
     make_a_lyb()
     coords = [(i.rect.x, i.rect.y) for i in all_blocks]
+
 
     class Hero(pygame.sprite.Sprite):
         heart = 2
@@ -182,8 +184,7 @@ if __name__ == '__main__':
                 self.speed = 0
                 self.cur.execute('UPDATE levels SET value = 1 WHERE id = 1')
                 self.con.commit()
-                subprocess.Popen(['python', 'welcome_page.py'])
-                sys.exit()
+                termination()
             if len(all_hearts) == 1:
                 if self.cur.execute('SELECT Hearts FROM coins').fetchone()[0] == 2:
                     all_hearts.add(heart2)
@@ -197,7 +198,7 @@ if __name__ == '__main__':
             if self.cur.execute('SELECT Skin FROM coins').fetchone()[0] == 1:
                 self.image = load_img('../data/new_skin.png')
             else:
-                self.image = load_img('../data/cha1.png')
+                self.rotate()
             if self.cur.execute('SELECT Weapon FROM coins').fetchone()[0] == 1:
                 if pygame.sprite.spritecollideany(self, all_spiders) is not None:
                     sprt = pygame.sprite.spritecollideany(self, all_spiders)
@@ -241,12 +242,17 @@ if __name__ == '__main__':
                 elif self.image == self.image2:
                     self.image = self.image1
 
+    def termination():
+        global running
+        running = False
+
 
     clock = pygame.time.Clock()
     all_sprites = pygame.sprite.Group()
     hero = Hero(50, 770)
     all_sprites.add(hero)
     exit1 = pygame.sprite.Group()
+
 
     class Exit1(pygame.sprite.Sprite):
         image1 = load_img("../data/door.png")
@@ -291,6 +297,7 @@ if __name__ == '__main__':
             self.rect.x = 290
             self.rect.y = 565
 
+
     trader = pygame.sprite.Group()
     trader.add(Trader())
 
@@ -313,7 +320,7 @@ if __name__ == '__main__':
 
     all_spiders = pygame.sprite.Group()
 
-    for i in range(5):
+    for i in range(3):
         all_spiders.add(Spiders())
 
 
@@ -336,12 +343,15 @@ if __name__ == '__main__':
                 self.rect.x = randrange(10, 800, 40)
 
 
+    def except_hook(cls, exception, traceback):
+        sys.__excepthook__(cls, exception, traceback)
+
+
     all_coins = pygame.sprite.Group()
     for i in range(7):
         all_coins.add(Coins())
 
     board = Board(20, 20)
-    running = True
     while running:
         time = 0
         for event in pygame.event.get():
@@ -378,5 +388,5 @@ if __name__ == '__main__':
         all_coins.draw(screen)
         clock.tick(FPS)
         pygame.display.flip()
-
+    sys.excepthook = except_hook
     pygame.quit()
